@@ -21,34 +21,55 @@ export default function SidebarItem({
 }: Props) {
   const pathname = usePathname();
 
-  // Cek active dengan menghilangkan query params
   const cleanHref = href.replace(/\?.*$/, "");
-  const active = pathname === cleanHref || pathname.startsWith(cleanHref + "/");
+  const active =
+    pathname === cleanHref ||
+    (pathname.startsWith(cleanHref + "/") && cleanHref !== "/dashboard/admin" && cleanHref !== "/dashboard/petugas" && cleanHref !== "/dashboard/warga");
 
   return (
     <Link
       href={href}
       className={cn(
-        "group flex items-center rounded-xl transition-all duration-300",
-        collapsed
-          ? "justify-center p-3"
-          : "gap-3 px-4 py-3",
+        "group relative flex items-center rounded-xl transition-all duration-200",
+        collapsed ? "justify-center p-3" : "gap-3 px-4 py-3",
         active
-          ? "bg-sky-500 text-white shadow-lg"
-          : "text-slate-300 hover:bg-slate-800 hover:text-white"
+          ? "bg-gradient-to-r from-emerald-500/20 to-emerald-500/5 text-emerald-400 shadow-lg shadow-emerald-500/10"
+          : "text-slate-400 hover:bg-slate-800/50 hover:text-white"
       )}
+      title={collapsed ? label : undefined}
     >
-      <span>{icon}</span>
+      {/* Active Indicator */}
+      {active && (
+        <span className="absolute left-0 top-1/2 h-8 w-1 -translate-y-1/2 rounded-r-full bg-emerald-400" />
+      )}
 
+      {/* Icon */}
+      <span
+        className={cn(
+          "transition-transform duration-200",
+          active ? "text-emerald-400" : "text-slate-400 group-hover:text-emerald-400"
+        )}
+      >
+        {icon}
+      </span>
+
+      {/* Label */}
       {!collapsed && (
-        <>
-          <span className="flex-1 font-medium">{label}</span>
-          {badge && (
-            <span className="rounded-full bg-yellow-500/20 px-2 py-0.5 text-xs font-medium text-yellow-400">
-              {badge}
-            </span>
-          )}
-        </>
+        <span className="flex-1 text-sm font-medium">{label}</span>
+      )}
+
+      {/* Badge */}
+      {!collapsed && badge && (
+        <span className="rounded-full bg-yellow-500/20 px-2 py-0.5 text-xs font-bold text-yellow-400">
+          {badge}
+        </span>
+      )}
+
+      {/* Collapsed Badge */}
+      {collapsed && badge && (
+        <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-yellow-500 text-[10px] font-bold text-white">
+          {badge}
+        </span>
       )}
     </Link>
   );

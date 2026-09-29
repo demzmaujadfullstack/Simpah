@@ -7,7 +7,6 @@ import {
   useCallback,
   ReactNode,
   useEffect,
-  useRef,
 } from "react";
 
 type SidebarContextType = {
@@ -18,53 +17,25 @@ type SidebarContextType = {
 
 const SidebarContext = createContext<SidebarContextType | null>(null);
 
-export function SidebarProvider({
-  children,
-}: {
-  children: ReactNode;
-}) {
-  const [collapsed, setCollapsed] = useState(false);
-  const isMounted = useRef(false);
-
-  // Load dari localStorage saat pertama kali di client
-  useEffect(() => {
-    isMounted.current = true;
+export function SidebarProvider({ children }: { children: ReactNode }) {
+  // ✅ Lazy initializer: baca localStorage saat state pertama kali dibuat
+  const [collapsed, setCollapsed] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
     const saved = localStorage.getItem("sidebar");
-    if (saved !== null) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setCollapsed(saved === "true");
-    }
-  }, []);
+    return saved === "true";
+  });
 
-  // Simpan ke localStorage setiap kali collapsed berubah
+  // ✅ Simpan ke localStorage setiap kali collapsed berubah
   useEffect(() => {
-    if (isMounted.current) {
-      localStorage.setItem("sidebar", String(collapsed));
-    }
+    localStorage.setItem("sidebar", String(collapsed));
   }, [collapsed]);
 
   const toggle = useCallback(() => {
     setCollapsed((prev) => !prev);
   }, []);
 
-  const handleSetCollapsed: React.Dispatch<
-    React.SetStateAction<boolean>
-  > = (value) => {
-    setCollapsed((prev) => {
-      const next =
-        typeof value === "function" ? value(prev) : value;
-      return next;
-    });
-  };
-
   return (
-    <SidebarContext.Provider
-      value={{
-        collapsed,
-        setCollapsed: handleSetCollapsed,
-        toggle,
-      }}
-    >
+    <SidebarContext.Provider value={{ collapsed, setCollapsed, toggle }}>
       {children}
     </SidebarContext.Provider>
   );

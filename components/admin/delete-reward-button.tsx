@@ -30,7 +30,7 @@ export default function DeleteRewardButton({
       }
 
       router.refresh();
-    } catch (error) {
+    } catch {
       alert("Gagal menghapus reward");
     } finally {
       setIsLoading(false);

@@ -16,9 +16,6 @@ import {
   Gift,
 } from "lucide-react";
 
-// ========================================
-// DEFINISI TIPE
-// ========================================
 type MenuItem = {
   href: string;
   icon: React.ReactNode;
@@ -43,103 +40,149 @@ export default function SidebarNav() {
 
   const role = session?.user?.role || "WARGA";
 
-  // ========================================
-  // MENU BERDASARKAN ROLE
-  // ========================================
-  
   const menuConfig: MenuConfig = {
     ADMIN: {
       sections: [
         {
-          label: "Dashboard",
+          label: "Main",
           items: [
-            { href: "/dashboard/admin", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
+            {
+              href: "/dashboard/admin",
+              icon: <LayoutDashboard size={20} />,
+              label: "Dashboard",
+            },
           ],
         },
         {
           label: "Master Data",
           items: [
-            { href: "/dashboard/admin/users", icon: <Users size={20} />, label: "User" },
-            { href: "/dashboard/admin/wilayah", icon: <MapPinned size={20} />, label: "Wilayah" },
-            { href: "/dashboard/admin/sampah", icon: <Recycle size={20} />, label: "Jenis Sampah" },
+            {
+              href: "/dashboard/admin/users",
+              icon: <Users size={20} />,
+              label: "User",
+            },
+            {
+              href: "/dashboard/admin/wilayah",
+              icon: <MapPinned size={20} />,
+              label: "Wilayah",
+            },
+            {
+              href: "/dashboard/admin/sampah",
+              icon: <Recycle size={20} />,
+              label: "Jenis Sampah",
+            },
           ],
         },
         {
           label: "Transaksi",
           items: [
-            { href: "/dashboard/admin/submissions", icon: <Package size={20} />, label: "Setoran" },
+            {
+              href: "/dashboard/admin/submissions",
+              icon: <Package size={20} />,
+              label: "Setoran",
+            },
+            {
+              href: "/dashboard/admin/rewards",
+              icon: <Gift size={20} />,
+              label: "Reward",
+            },
           ],
         },
         {
-          label: "Reward",
+          label: "Analitik",
           items: [
-            { href: "/dashboard/admin/rewards", icon: <Gift size={20} />, label: "Kelola Reward" },
+            {
+              href: "/dashboard/admin/laporan",
+              icon: <ChartColumn size={20} />,
+              label: "Laporan",
+            },
           ],
         },
         {
-          label: "Laporan",
+          label: "Lainnya",
           items: [
-            { href: "/dashboard/admin/laporan", icon: <ChartColumn size={20} />, label: "Laporan" },
-          ],
-        },
-        {
-          label: "Pengaturan",
-          items: [
-            { href: "/dashboard/admin/settings", icon: <Settings size={20} />, label: "Pengaturan" },
-          ],
-        },
-      ],
-    },
-    
-    PETUGAS: {
-      sections: [
-        {
-          label: "Dashboard",
-          items: [
-            { href: "/dashboard/petugas", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
-          ],
-        },
-        {
-          label: "Transaksi",
-          items: [
-            { href: "/dashboard/petugas/submissions", icon: <Package size={20} />, label: "Setoran" },
-            { 
-              href: "/dashboard/petugas/submissions?status=PENDING", 
-              icon: <Clock size={20} />, 
-              label: "Verifikasi", 
-              badge: "0"
+            {
+              href: "/dashboard/admin/settings",
+              icon: <Settings size={20} />,
+              label: "Pengaturan",
             },
           ],
         },
       ],
     },
-    
+
+    PETUGAS: {
+      sections: [
+        {
+          label: "Main",
+          items: [
+            {
+              href: "/dashboard/petugas",
+              icon: <LayoutDashboard size={20} />,
+              label: "Dashboard",
+            },
+          ],
+        },
+        {
+          label: "Transaksi",
+          items: [
+            {
+              href: "/dashboard/petugas/submissions",
+              icon: <Package size={20} />,
+              label: "Setoran",
+            },
+            {
+              href: "/dashboard/petugas/submissions?status=PENDING",
+              icon: <Clock size={20} />,
+              label: "Verifikasi",
+              badge: "0",
+            },
+          ],
+        },
+      ],
+    },
+
     WARGA: {
       sections: [
         {
-          label: "Dashboard",
+          label: "Main",
           items: [
-            { href: "/dashboard/warga", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
+            {
+              href: "/dashboard/warga",
+              icon: <LayoutDashboard size={20} />,
+              label: "Dashboard",
+            },
           ],
         },
         {
           label: "Setoran",
           items: [
-            { href: "/dashboard/warga/submissions", icon: <Package size={20} />, label: "Setoran Saya" },
-            { href: "/dashboard/warga/submissions/create", icon: <Plus size={20} />, label: "Setor Sampah" },
+            {
+              href: "/dashboard/warga/submissions",
+              icon: <Package size={20} />,
+              label: "Setoran Saya",
+            },
+            {
+              href: "/dashboard/warga/submissions/create",
+              icon: <Plus size={20} />,
+              label: "Setor Sampah",
+            },
           ],
         },
         {
           label: "Reward",
           items: [
-            { href: "/dashboard/warga/rewards", icon: <Gift size={20} />, label: "Tukar Poin" },
+            {
+              href: "/dashboard/warga/rewards",
+              icon: <Gift size={20} />,
+              label: "Tukar Poin",
+            },
           ],
         },
       ],
     },
   };
 
-  // Ambil menu sesuai role, fallback ke WARGA
   const menu = menuConfig[role as keyof typeof menuConfig] || menuConfig.WARGA;
 
   return (
@@ -147,7 +190,7 @@ export default function SidebarNav() {
       {menu.sections.map((section, sectionIndex) => (
         <div key={sectionIndex} className="mb-6">
           {!collapsed && section.label && (
-            <p className="mb-3 px-6 text-[11px] font-bold uppercase tracking-[0.25em] text-slate-500">
+            <p className="mb-3 px-6 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
               {section.label}
             </p>
           )}

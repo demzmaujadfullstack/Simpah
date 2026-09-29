@@ -2,7 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Plus, Pencil, Trash2, Gift } from "lucide-react";
+import { Plus, Pencil, Gift } from "lucide-react";
+import DeleteRewardButton from "@/components/admin/delete-reward-button";
 
 export default async function AdminRewardsPage() {
   const session = await auth();
@@ -67,20 +68,10 @@ export default async function AdminRewardsPage() {
                   >
                     <Pencil size={18} />
                   </Link>
-                  <form action={`/api/rewards/${reward.id}`} method="POST">
-                    <input type="hidden" name="_method" value="DELETE" />
-                    <button
-                      type="submit"
-                      className="rounded-lg p-2 text-red-600 transition hover:bg-red-50"
-                      onClick={(e) => {
-                        if (!confirm(`Hapus reward "${reward.name}"?`)) {
-                          e.preventDefault();
-                        }
-                      }}
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </form>
+                  <DeleteRewardButton
+                    rewardId={reward.id}
+                    rewardName={reward.name}
+                  />
                 </div>
               </div>
 

@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
-import { randomUUID } from "crypto";
+import { auth } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const formData = await request.formData();
-    
     const userId = formData.get("userId") as string;
     const regionId = formData.get("regionId") as string;
     const categoryId = formData.get("categoryId") as string;
@@ -15,54 +17,29 @@ export async function POST(request: NextRequest) {
     const file = formData.get("file") as File;
 
     if (!userId || !regionId || !categoryId || !weight || !file) {
-      return NextResponse.json(
-        { error: "Semua field wajib diisi" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Semua field wajib diisi" }, { status: 400 });
     }
 
-    // Validasi user
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { error: "User tidak ditemukan" },
-        { status: 404 }
-      );
+    if (userId !== session.user.id) {
+      return NextResponse.json({ error: "Anda tidak memiliki akses" }, { status: 403 });
     }
 
-    // Validasi kategori
     const category = await prisma.wasteCategory.findUnique({
       where: { id: categoryId },
     });
 
     if (!category) {
-      return NextResponse.json(
-        { error: "Kategori tidak ditemukan" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Kategori tidak ditemukan" }, { status: 404 });
     }
 
-    // Simpan file
+    // ✅ Convert file ke base64 (untuk Vercel)
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
+    const base64 = buffer.toString("base64");
+    const photoPath = `data:${file.type};base64,${base64}`;
 
-    // Buat folder jika belum ada
-    const uploadDir = join(process.cwd(), "public/uploads/submissions");
-    await mkdir(uploadDir, { recursive: true });
-
-    const fileName = `${randomUUID()}-${file.name}`;
-    const filePath = join(uploadDir, fileName);
-    await writeFile(filePath, buffer);
-
-    const photoPath = `/uploads/submissions/${fileName}`;
-
-    // Hitung poin
     const point = Math.round(weight * category.point);
 
-    // Buat submission
     const submission = await prisma.submission.create({
       data: {
         userId,
@@ -75,7 +52,13 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Update total point user
+    await prisma.fotoSampah.create({
+      data: {
+        submissionId: submission.id,
+        url: photoPath,
+      },
+    });
+
     await prisma.user.update({
       where: { id: userId },
       data: {
@@ -86,15 +69,7 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(
-      {
-        message: "Setoran berhasil dikirim",
-        submission: {
-          id: submission.id,
-          weight: submission.weight,
-          point: submission.point,
-          status: submission.status,
-        },
-      },
+      { message: "Setoran berhasil dikirim" },
       { status: 201 }
     );
   } catch (error) {

@@ -3,17 +3,15 @@ import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { compare } from "bcryptjs";
 
+import { authConfig } from "@/auth.config";
 import { prisma } from "@/lib/prisma";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  ...authConfig,  // ← Spread config ringan
   adapter: PrismaAdapter(prisma),
 
   session: {
     strategy: "jwt",
-  },
-
-  pages: {
-    signIn: "/auth/login",
   },
 
   providers: [
@@ -35,25 +33,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           where: { email },
         });
 
-        if (!user) {
-          return null;
-        }
+        if (!user) return null;
 
         const isPasswordValid = await compare(password, user.password);
+        if (!isPasswordValid) return null;
 
-        if (!isPasswordValid) {
-          return null;
-        }
-
-        // Update lastLoginAt
         await prisma.user.update({
           where: { id: user.id },
-          data: {
-            lastLoginAt: new Date(),
-          },
+          data: { lastLoginAt: new Date() },
         });
 
-        // Simpan audit log
         await prisma.auditLog.create({
           data: {
             action: "LOGIN",
@@ -74,6 +63,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
 
   callbacks: {
+    ...authConfig.callbacks,  // ← Pakai callback dari authConfig
     async jwt({ token, user }) {
       if (user) {
         token.id = String(user.id);
@@ -93,10 +83,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
 
     async redirect({ url, baseUrl }) {
-  if (url.startsWith(baseUrl)) return url;
-
-  return baseUrl;
-}
+      if (url.startsWith(baseUrl)) return url;
+      return baseUrl;
+    },
   },
 
   secret: process.env.AUTH_SECRET,
